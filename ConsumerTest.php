@@ -20,5 +20,6 @@ go(function () {
                 var_dump($item['message']);
             }
         );
+        $nsq->stop();
     }
 });

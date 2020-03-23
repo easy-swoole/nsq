@@ -25,6 +25,8 @@ class ConsumerTest extends TestCase
      */
     public $hosts;
 
+    public $nsq;
+
     /**
      * ConsumerTest constructor.
      * @param null   $name
@@ -37,22 +39,22 @@ class ConsumerTest extends TestCase
     {
         $this->topic    = "topic.test";
         $config         = new Config();
-
         $nsqlookup      = new Nsqlookupd($config->getNsqdUrl());
         $this->hosts    = $nsqlookup->lookupHosts($this->topic);
-
+        $this->nsq      = new Nsq();
         parent::__construct($name, $data, $dataName);
     }
 
     /**
      * 内部实现 持续化消费
+     * @throws \Throwable
      */
     public function testSubscribe()
     {
         foreach ($this->hosts as $host) {
-            $nsq = new Nsq();
-            $nsq->subscribe(
-                new Consumer($host, new Config(), $this->topic, 'data.consuming'),
+            // 想要手动关闭，nsq 进程要唯一。类比 mysql 的 rollback
+            $this->nsq->subscribe(
+                new Consumer($host, new Config(), $this->topic, 'test.consuming'),
                 function ($item) {
                     var_dump($item['message']);
                 }
@@ -61,20 +63,8 @@ class ConsumerTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /**
-     * 用户控制消费频率
-     */
-    public function testPop()
+    public function testStop()
     {
-        foreach ($this->hosts as $host) {
-            $nsq = new Nsq();
-            $consumer = new Consumer($host, new Config(), $this->topic, 'test.consuming');
-            for ($i = 0; $i < 100; $i++) {
-                $nsq->pop($consumer, function ($item) {
-                    var_dump($item['message']);
-                });
-            }
-        }
-        $this->assertTrue(true);
+        $this->nsq->stop();
     }
 }

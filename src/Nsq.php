@@ -13,9 +13,12 @@ use EasySwoole\Nsq\Connection\Producer;
 use EasySwoole\Nsq\Message\Message;
 use EasySwoole\Nsq\Wire\Packet;
 use EasySwoole\Nsq\Wire\Unpack;
+use Swoole\Coroutine;
 
 class Nsq
 {
+    private $enableListen = false;
+
     /**
      * @param Producer $client
      * @param          $topic
@@ -59,8 +62,11 @@ class Nsq
      *
      * @param Consumer $client
      * @param          $callback
+     * @param float    $breakTime
+     * @param int      $maxCurrency
+     * @throws \Throwable
      */
-    public function subscribe(Consumer $client, $callback)
+    public function subscribe(Consumer $client, $callback, $breakTime = 0.01, $maxCurrency = 128)
     {
         if (!is_callable($callback)) {
             throw new \InvalidArgumentException(
@@ -72,32 +78,30 @@ class Nsq
             $client->reconnect();
         }
 
-        while (true) {
+        $this->enableListen = true;
+        $running = 0;
+
+        while ($this->enableListen) {
+            if ($running >= $maxCurrency) {
+                Coroutine::sleep($breakTime);
+                continue;
+            }
+
             if (!$client->isConnected()) {
                 $client->reconnect();
             }
 
             $data = $client->receive();
 
-            // if no message return null
-            if ($data == false) {
-                continue;
-            }
-
-            // unpack message
-            $frame = Unpack::getFrame($data);
-
-            if (Unpack::isHeartbeat($frame)) {
-                $client->send(Packet::nop());
-            } elseif (Unpack::isOk($frame)) {
-                continue;
-            } elseif (Unpack::isError($frame)) {
-                continue;
-            } elseif (Unpack::isMessage($frame)) {
-                $msg = new Message($frame);
-                call_user_func($callback, $msg->toArray());
-                $client->send(Packet::fin($msg->getId()));
-                $client->send(Packet::rdy(1));
+            if ($data != false) {
+                ++$running;
+                try {
+                    $this->pop($client, $callback, $data);
+                } catch (\Throwable $throwable) {
+                    throw $throwable;
+                } finally {
+                    --$running;
+                }
             } else {
                 continue;
             }
@@ -107,27 +111,11 @@ class Nsq
     /**
      * @param Consumer $client
      * @param          $callback
+     * @param          $data
      * @return bool
      */
-    public function pop(Consumer $client, $callback)
+    public function pop(Consumer $client, $callback, $data)
     {
-        if (!is_callable($callback)) {
-            throw new \InvalidArgumentException(
-                '"callback" invalid; expecting a PHP callable'
-            );
-        }
-
-        if (!$client->isConnected()) {
-            $client->reconnect();
-        }
-
-        $data = $client->receive();
-
-        // if no message return null
-        if ($data == false) {
-            return false;
-        }
-
         // unpack message
         $frame = Unpack::getFrame($data);
 
@@ -147,13 +135,19 @@ class Nsq
         }
     }
 
+    public function stop()
+    {
+        $this->enableListen = false;
+        return $this;
+    }
+
     /**
      * @param callable        $func
      * @param AbstractMonitor $conn
      * @param int             $tries
      * @throws \Exception
      */
-    public function tryFunc(callable $func, AbstractMonitor $conn, $tries = 1)
+    private function tryFunc(callable $func, AbstractMonitor $conn, $tries = 1)
     {
         $lastException = null;
         for ($try = 0; $try <= $tries; $try++) {

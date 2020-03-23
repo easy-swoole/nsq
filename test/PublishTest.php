@@ -46,7 +46,7 @@ class PublishTest extends TestCase
     {
         foreach ($this->hosts as $host) {
             $nsq = new Nsq();
-            for ($i = 0; $i < 10; $i++) {
+            for ($i = 0; $i < 100; $i++) {
                 $msg = new Message();
                 $msg->setPayload("test$i");
                 $nsq->push(
