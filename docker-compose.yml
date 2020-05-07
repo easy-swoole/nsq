@@ -11,7 +11,7 @@ services:
       - "4160:4160"
   nsqd:
     image: nsqio/nsq
-    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 -broadcast-address={docker nsqlookupd的ip地址，例如172.16.6.14}
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 -broadcast-address={服务器私网ip地址}
     volumes:
       - /data/nsq:/data
     depends_on:
