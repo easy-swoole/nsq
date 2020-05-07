@@ -6,6 +6,15 @@ NSQ客户端
 composer required easyswoole/nsq
 ```
 
+### 创建topic/channel
+1. 由于程序无法自动生成topic及对应的channel，所以需要用户手动先创建好
+    1. 在未创建topic、channel时，publish会返回成功的信息，但是实际上数据并没有发送到服务端
+    2. consumer会报错
+2. 创建topic、channel的方法。（有些版本的admin控制台创建出来的topic、channel其实并不是真的成功了，下面的方法更加靠谱）
+    1. curl http://127.0.0.1:4151/topic/create?topic=topic.test -X POST 
+    2. curl http://127.0.0.1:4151/channel/create?topic=topic.test&channel=test.consuming -X POST 
+    3. POSTMAN  模拟器post请求同理
+
 ### 注册Nsq服务
 ```php
 namespace EasySwoole\EasySwoole;
