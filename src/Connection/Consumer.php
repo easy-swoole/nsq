@@ -83,13 +83,7 @@ class Consumer extends AbstractMonitor
         $this->client->send(Packet::magic());
 
         // send identify params
-//        $this->client->send(Packet::identify([
-////            'client_id'           => $host,
-////            'hostname'            => gethostname(),
-//            'user_agent'          => 'nsq-client',
-////            'heartbeat_interval'  => 2000,
-//            'feature_negotiation' => false
-//        ]));
+        $this->client->send(Packet::identify($this->config->getIdentify()));
 
         // sub nsq topic and channel
         $hn    = gethostname();

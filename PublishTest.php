@@ -11,8 +11,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 go(function () {
     $config = new \EasySwoole\Nsq\Config();
     $topic  = "topic.test";
-    $nsqlookup = new \EasySwoole\Nsq\Lookup\Nsqlookupd($config->getNsqdUrl());
-    $hosts = $nsqlookup->lookupHosts($topic);
+    $hosts = $config->getNsqdUrl() ?: ['127.0.0.1:4150'];
 
     foreach ($hosts as $host) {
         $nsq = new \EasySwoole\Nsq\Nsq();

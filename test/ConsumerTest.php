@@ -21,6 +21,11 @@ class ConsumerTest extends TestCase
     public $topic;
 
     /**
+     * @var string
+     */
+    public $channel;
+
+    /**
      * @var array
      */
     public $hosts;
@@ -38,8 +43,9 @@ class ConsumerTest extends TestCase
     public function __construct($name = null, array $data = [], $dataName = '')
     {
         $this->topic    = "topic.test";
+        $this->channel  = "test.consuming";
         $config         = new Config();
-        $nsqlookup      = new Nsqlookupd($config->getNsqdUrl());
+        $nsqlookup      = new Nsqlookupd($config->getNsqlookupUrl());
         $this->hosts    = $nsqlookup->lookupHosts($this->topic);
         $this->nsq      = new Nsq();
         parent::__construct($name, $data, $dataName);
@@ -54,7 +60,7 @@ class ConsumerTest extends TestCase
         foreach ($this->hosts as $host) {
             // 想要手动关闭，nsq 进程要唯一。类比 mysql 的 rollback
             $this->nsq->subscribe(
-                new Consumer($host, new Config(), $this->topic, 'test.consuming'),
+                new Consumer($host, new Config(), $this->topic, $this->channel),
                 function ($item) {
                     var_dump($item['message']);
                 }

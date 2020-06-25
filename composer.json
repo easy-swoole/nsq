@@ -24,7 +24,8 @@
         "easyswoole/spl": "^1.1",
         "easyswoole/http-client": "^1.2.5",
         "easyswoole/pool": "^1.0",
-        "easyswoole/easyswoole": "3.x"
+        "easyswoole/easyswoole": "3.x",
+        "ext-json": "*"
     },
     "require-dev": {
         "easyswoole/swoole-ide-helper": "^1.1",
