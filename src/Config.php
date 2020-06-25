@@ -19,9 +19,9 @@ class Config
     /**
      * Nsqlookup host
      *
-     * @var string
+     * @var array
      */
-    public $nsqlookupUrl = '127.0.0.1:4161';
+    public $nsqlookupUrl = ['127.0.0.1:4161'];
 
     /**
      * Nsq Config
@@ -74,7 +74,7 @@ class Config
     }
 
     /**
-     * @return string
+     * @return array
      */
     public function getNsqlookupUrl()
     {
@@ -82,7 +82,7 @@ class Config
     }
 
     /**
-     * @param string $nsqlookupUrl
+     * @param array $nsqlookupUrl
      */
     public function setNsqlookupUrl($nsqlookupUrl)
     {
