@@ -34,8 +34,7 @@ class PublishTest extends TestCase
     {
         $this->config = new Config();
         $this->topic  = "topic.test";
-        $nsqlookup = new Nsqlookupd($this->config->getNsqdUrl());
-        $this->hosts = $nsqlookup->lookupHosts($this->topic);
+        $this->hosts = $this->config->getNsqdUrl() ?: ['127.0.0.1:4150'];
         parent::__construct($name, $data, $dataName);
     }
 

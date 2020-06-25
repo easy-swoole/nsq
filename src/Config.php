@@ -12,16 +12,16 @@ class Config
     /**
      * Nsqd host
      *
-     * @var string
+     * @var array
      */
-    public $nsqdUrl = '127.0.0.1:4161';
+    public $nsqdUrl = ['127.0.0.1:4150'];
 
     /**
      * Nsqlookup host
      *
      * @var string
      */
-    public $nsqlookupUrl = '127.0.0.1:4150';
+    public $nsqlookupUrl = '127.0.0.1:4161';
 
     /**
      * Nsq Config
@@ -58,7 +58,7 @@ class Config
     ];
 
     /**
-     * @return string
+     * @return array
      */
     public function getNsqdUrl()
     {
@@ -66,7 +66,7 @@ class Config
     }
 
     /**
-     * @param string $nsqdUrl
+     * @param array $nsqdUrl
      */
     public function setNsqdUrl($nsqdUrl)
     {
